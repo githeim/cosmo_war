@@ -155,19 +155,21 @@ void Create_TextObj(Obj_t& TextObj,SDL_Texture* pTex,Pos_t& Pos) {
   };
 }
 
-
 void Plugin_SceneCtrl(entt::registry& Reg,entt::entity SceneEntity,
                          double &dbActualFrameDiff_SEC,
                          entt::entity &ObjLifecycleEntity) 
 {
-
   auto &LifeCycle = Reg.get<ObjLifecyle_t>(ObjLifecycleEntity);
-
   auto &SceneCtrl = Reg.get<SceneCtrl_t>(SceneEntity);
 
   std::vector<Obj_t> Create_List ={};
   std::vector<entt::entity> Delete_List={};
   Scene_idx_t RequestedScene = SCENE_NONE;
+
+  // Get TextureMap
+  entt::entity TextureMapEntity = LifeCycle.TextureMap;
+  static auto &TextureMap = Reg.get<TextureMap_t>(TextureMapEntity);
+
   // Get Requested scene from the vector
   if (SceneCtrl.vecScene.size() != 0) {
     RequestedScene = *SceneCtrl.vecScene.begin();
@@ -175,19 +177,13 @@ void Plugin_SceneCtrl(entt::registry& Reg,entt::entity SceneEntity,
   }
 
   if (RequestedScene == SCENE_TITLE) {
-
     //Delete Objs
     auto ViewDelete = Reg.view<Sprite_t,Pos_t,Attr_t,State_t>();
     for (auto Entity : ViewDelete) {
       LifeCycle.Delete_List.insert(Entity);
     }
 
-    // Get TextureMap
-    entt::entity TextureMapEntity = LifeCycle.TextureMap;
-    static auto &TextureMap = Reg.get<TextureMap_t>(TextureMapEntity);
-
     // Create Main Title
-
     auto pTitleTextTex = TextureMap.mapTextures["TitleText"];
     Pos_t Pos;
     Obj_t Title;
@@ -218,9 +214,8 @@ void Plugin_SceneCtrl(entt::registry& Reg,entt::entity SceneEntity,
     // Change Current Scene
     SceneCtrl.CurrentScene = SCENE_TITLE;
   }
-
-  if (RequestedScene == SCENE_PLAY) {
-    // Delete titles
+  else if (RequestedScene == SCENE_PLAY) {
+    // Delete titles, Objects
     auto ViewDelete = Reg.view<Sprite_t,Pos_t,Attr_t,State_t>();
     for (auto Entity : ViewDelete) {
       LifeCycle.Delete_List.insert(Entity);
@@ -231,6 +226,44 @@ void Plugin_SceneCtrl(entt::registry& Reg,entt::entity SceneEntity,
     // Change Current Scene
     SceneCtrl.CurrentScene = SCENE_PLAY;
   }
+  else if (RequestedScene == SCENE_WIN_ENDING) {
+    printf("\033[1;33m[%s][%d] :x: SCENE_WIN_ENDING \033[m\n",__FUNCTION__,__LINE__);
+    // Delete titles, Objects
+    auto ViewDelete = Reg.view<Sprite_t,Pos_t,Attr_t,State_t>();
+    for (auto Entity : ViewDelete) {
+      LifeCycle.Delete_List.insert(Entity);
+    }
+    // Create Win Title
+    auto pWinTex = TextureMap.mapTextures["You_Win"];
+    Pos_t Pos;
+    Obj_t Title;
+    memset(&Pos,0x00,sizeof(Pos_t));
+    Pos.CurLocation.iX = 320-(336/2);
+    Pos.CurLocation.iY = 240;
+    Create_TextObj(Title,pWinTex,  Pos);
+    Create_List.push_back(Title);
+    SceneCtrl.CurrentScene = SCENE_WIN_ENDING;
+  }
+  else if (RequestedScene == SCENE_DEFEATED_ENDING) {
+    printf("\033[1;33m[%s][%d] :x: SCENE_DEFEATED_ENDING \033[m\n",__FUNCTION__,__LINE__);
+    // Delete titles, Objects
+    auto ViewDelete = Reg.view<Sprite_t,Pos_t,Attr_t,State_t>();
+    for (auto Entity : ViewDelete) {
+      LifeCycle.Delete_List.insert(Entity);
+    }
+    // Create Defeated Title
+    auto pDefeatedTex = TextureMap.mapTextures["Defeated"];
+    Pos_t Pos;
+    Obj_t Title;
+    memset(&Pos,0x00,sizeof(Pos_t));
+    Pos.CurLocation.iX = 320-(384/2);
+    Pos.CurLocation.iY = 240;
+    Create_TextObj(Title,pDefeatedTex,  Pos);
+
+    Create_List.push_back(Title);
+    SceneCtrl.CurrentScene = SCENE_DEFEATED_ENDING;
+  }
+
 
   for (auto Item : Create_List) {
     LifeCycle.Create_List.push_back(Item);

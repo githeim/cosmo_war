@@ -8,12 +8,9 @@ void test() {
 
 
 CApp::CApp() {
-  printf("\033[1;33m[%s][%d] :x: Create \033[m\n",__FUNCTION__,__LINE__);
   m_pECS_registry = std::make_shared<entt::registry>();
-
 }
 CApp::~CApp() {
-  printf("\033[1;32m[%s][%d] :x: Destroy \033[m\n",__FUNCTION__,__LINE__);
 
 }
 
@@ -41,8 +38,8 @@ void CApp::Create_Textures(const std::shared_ptr<entt::registry>& pECS,
     IMG_LoadTexture(m_pRenderer, "resource/pics/burst_00.png");
   m_mapTextures["burst00"] =Map.mapTextures["burst00"];
 
-
   SDL_Texture* pTxtTexture;
+
   DrawText(pTxtTexture,m_mapFonts["Text_LARGE"],"COSMO WAR",m_pRenderer);
   Map.mapTextures["TitleText"] = pTxtTexture;
   m_mapTextures["TitleText"] = pTxtTexture;
@@ -54,6 +51,15 @@ void CApp::Create_Textures(const std::shared_ptr<entt::registry>& pECS,
   DrawText(pTxtTexture,m_mapFonts["Text_SMALL"],"windheim 2024.07.02",m_pRenderer);
   Map.mapTextures["credit"] = pTxtTexture;
   m_mapTextures["credit"] = pTxtTexture;
+
+  DrawText(pTxtTexture,m_mapFonts["Text_LARGE"],"You Win",m_pRenderer);
+  Map.mapTextures["You_Win"] = pTxtTexture;
+  m_mapTextures  ["You_Win"] = pTxtTexture;
+
+  DrawText(pTxtTexture,m_mapFonts["Text_LARGE"],"Defeated",m_pRenderer);
+  Map.mapTextures["Defeated"] = pTxtTexture;
+  m_mapTextures  ["Defeated"] = pTxtTexture;
+
 
   pECS->emplace<TextureMap_t>(TextureMap, Map);
 

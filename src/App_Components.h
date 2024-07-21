@@ -12,11 +12,11 @@
 
 
 typedef enum {
-  SCENE_NONE           = 0x0,
-  SCENE_TITLE          = 0x1,
-  SCENE_PLAY           = 0x2,
-  SCENE_WIN_ENDING     = 0x4,
-  SCENE_DEFEAT_ENDING  = 0x8
+  SCENE_NONE             = 0x0,
+  SCENE_TITLE            = 0x1,
+  SCENE_PLAY             = 0x2,
+  SCENE_WIN_ENDING       = 0x4,
+  SCENE_DEFEATED_ENDING  = 0x8
 } Scene_idx_t;
 
 typedef struct SceneCtrl {

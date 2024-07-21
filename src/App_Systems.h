@@ -74,12 +74,40 @@ typedef struct Sys_Logic {
     std::vector<entt::entity> Delete_List={};
 
     // Check Scene is SCENE_PLAY
+    entt::entity SceneCtrl_Entity = Get_SceneCtrl_Entity();
+    auto &SceneCtrl = Reg.get<SceneCtrl_t>(SceneCtrl_Entity);
     
-    // if enemy objects do not exist , change to SCENE_WIN_ENDING
-    
-    // if player objects do not exist , change to SCENE_DEFEAT_ENDING
-    
+    static const int iFactionFilter_Player = PLAYER_1 | PLAYER_2;
+    static const int iFactionFilter_Enemy = ENEMY_1 ;
+    if (SceneCtrl.CurrentScene == SCENE_PLAY) {
+      static auto ViewObjs = Reg.view<Sprite_t,Pos_t,Attr_t,State_t>();
 
+      int iCntEnemy=0;
+      int iCntPlayer=0;
+
+      for (auto Entity : ViewObjs) {
+        auto &ObjAttr = ViewObjs.get<Attr_t>(Entity);
+        if ( ObjAttr.iFaction & iFactionFilter_Player) {
+          iCntPlayer++;
+        }
+        if ( ObjAttr.iFaction & iFactionFilter_Enemy ) {
+          iCntEnemy++;
+        }
+      }
+
+      if (iCntEnemy == 0 && iCntPlayer == 0) {
+        printf("\033[1;33m[%s][%d] :x: state change \033[m\n",__FUNCTION__,__LINE__);
+      }
+      else if (iCntEnemy == 0){
+        // if enemy objects do not exist , change to SCENE_WIN_ENDING
+        SceneCtrl.vecScene.push_back(SCENE_WIN_ENDING);
+      }
+      else if (iCntPlayer == 0){
+        // if player objects do not exist , change to SCENE_DEFEATED_ENDING
+        SceneCtrl.vecScene.push_back(SCENE_DEFEATED_ENDING);
+      }
+    }
+    
     for (auto Item : Delete_List) {
       LifeCycle.Delete_List.insert(Item);
     }
