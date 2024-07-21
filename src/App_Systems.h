@@ -73,6 +73,12 @@ typedef struct Sys_Logic {
     std::vector<Obj_t> Create_List ={};
     std::vector<entt::entity> Delete_List={};
 
+    // Check Scene is SCENE_PLAY
+    
+    // if enemy objects do not exist , change to SCENE_WIN_ENDING
+    
+    // if player objects do not exist , change to SCENE_DEFEAT_ENDING
+    
 
     for (auto Item : Delete_List) {
       LifeCycle.Delete_List.insert(Item);
@@ -85,8 +91,6 @@ typedef struct Sys_Logic {
 
 } Sys_Logic_t;
 
-
-
 typedef struct Sys_Input {
   void Update(entt::registry& Reg,double &dbActual_Frame_diff_SEC,entt::entity &ObjLifecycleEntity) {
 
@@ -97,6 +101,19 @@ typedef struct Sys_Input {
     auto TextureMap = Reg.get<TextureMap_t>(TextureMapEntity);
     SDL_Texture *pBulletTex = TextureMap.mapTextures["bullet00"];
 
+    entt::entity SceneCtrl_Entity = Get_SceneCtrl_Entity();
+    auto &SceneCtrl = Reg.get<SceneCtrl_t>(SceneCtrl_Entity);
+    
+    if (SceneCtrl.CurrentScene == SCENE_TITLE) {
+      if (Keys[SDL_SCANCODE_RETURN]) {
+        SceneCtrl.vecScene.push_back(SCENE_PLAY);
+        printf("\033[1;31m[%s][%d] :x: change to %d \033[m\n",
+            __FUNCTION__,__LINE__,SCENE_PLAY);
+
+      }
+    }
+   
+    
     auto View = Reg.view<Attr_t,Pos_t,State_t>();
     std::vector<Obj_t> Create_List ={};
     View.each([pBulletTex,&Create_List,Keys,dbActual_Frame_diff_SEC] (auto &Attr,auto &Pos,auto &State){

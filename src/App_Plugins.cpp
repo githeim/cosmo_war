@@ -2,6 +2,110 @@
 #include "App_Plugins.h"
 #include <stdlib.h>
 
+
+
+static entt::entity g_SceneCtrl_Entity;
+void Set_SceneCtrl_Entity(entt::entity Entity) {
+  g_SceneCtrl_Entity = Entity;
+}
+entt::entity Get_SceneCtrl_Entity() {
+  return g_SceneCtrl_Entity;
+}
+
+
+
+
+void Create_Player(entt::registry& Reg,
+                         entt::entity& ObjLifecycleEntity) {
+  auto &LifeCycle = Reg.get<ObjLifecyle_t>(ObjLifecycleEntity);
+  // Get TextureMap
+  entt::entity TextureMapEntity = LifeCycle.TextureMap;
+  static auto &TextureMap = Reg.get<TextureMap_t>(TextureMapEntity);
+
+  // Base Position
+  Pos_t Pos; 
+  Pos.CurLocation = { SCREEN_WIDTH/2,SCREEN_HEIGHT*4/5,SPRITE_SIZE,SPRITE_SIZE,0 };
+  // Base Attribute
+  Attr_t Attr;
+  Attr.iFaction = PLAYER_1;
+  Attr.iLife = PLAYER_LIFE;
+  Attr.fCoolTime_Sec = .1f;  // Firing cool time
+  Attr.iMovingSpeed_Pixel = 3;  // Moving Speed
+  Attr.vecPlugins.push_back(Plugin_Player_State);
+  // Base Sprite
+  Sprite_t Sprite;
+  Sprite.pTex = TextureMap.mapTextures["spaceship"];
+  Sprite.src ={0,0,SPRITE_SIZE,SPRITE_SIZE};
+  Sprite.dst = {0,0,SPRITE_SIZE,SPRITE_SIZE}; 
+
+  // Base State
+  State_t State;
+  State.fCoolTimeLeft_Sec=Attr.fCoolTime_Sec;
+  State.bCoolTimeReady=true;
+  State.TargetLocation ={};
+  State.Direction ={};
+  State.iLife = Attr.iLife;
+
+  // Create obj to insert create list
+  Obj_t Obj = {Sprite,Pos,Attr,State};
+
+  LifeCycle.Create_List.push_back(Obj);
+}
+void Create_Enemies(entt::registry& Reg,
+                         entt::entity& ObjLifecycleEntity) {
+  auto &LifeCycle = Reg.get<ObjLifecyle_t>(ObjLifecycleEntity);
+  
+  // Get TextureMap
+  entt::entity TextureMapEntity = LifeCycle.TextureMap;
+  static auto &TextureMap = Reg.get<TextureMap_t>(TextureMapEntity);
+
+  // Base Position
+  Pos_t Pos ;
+  Pos.CurLocation = { 30,60,SPRITE_SIZE,SPRITE_SIZE,0 };
+  // Base Attribute
+  Attr_t Attr;
+  Attr.iFaction = ENEMY_1;
+  Attr.iLife = ENEMY_LIFE;
+  Attr.fCoolTime_Sec = .1f;  // Firing cool time
+  Attr.iMovingSpeed_Pixel = 2;  // Moving Speed
+
+  // Moving processing plugin
+  Attr.vecPlugins.push_back(Plugin_Enemy_Moving);
+  // Shooting processing plugin
+  Attr.vecPlugins.push_back(Plugin_Enemy_Shooting);
+  Attr.vecPlugins.push_back(Plugin_Enemy_State);
+
+
+  int iIntervalX = SPRITE_SIZE*2;
+
+
+  // Base Sprite
+  Sprite_t Sprite;
+  Sprite.pTex = TextureMap.mapTextures["enemy00"];
+  Sprite.src ={0,0,SPRITE_SIZE,SPRITE_SIZE};
+  Sprite.dst = {0,0,SPRITE_SIZE,SPRITE_SIZE}; 
+
+  // Base State
+  State_t State;
+  State.fCoolTimeLeft_Sec=Attr.fCoolTime_Sec;
+  State.bCoolTimeReady=true;
+  State.TargetLocation ={0,0,SPRITE_SIZE,SPRITE_SIZE,0};// TargetLocation initial value;
+  State.Direction = DIRECTION_RIGHT;
+  State.iLife = Attr.iLife;
+
+
+
+  // Create 6 enemies
+  for (int i =0 ; i < 6 ; i++) {
+    Pos.CurLocation.iX = 30 + (iIntervalX*i);
+    State.Direction =DIRECTION_RIGHT;
+    State.TargetLocation.iX=Pos.CurLocation.iX + ENEMY_MOVEMENT_WIDTH;
+    Obj_t Obj = {Sprite,Pos,Attr,State};
+    LifeCycle.Create_List.push_back(Obj);
+  }
+}
+
+
 void Plugin_Player_State(entt::registry& Reg,entt::entity ObjEntity,
                          double &dbActualFrameDiff_SEC,
                          entt::entity &ObjLifecycleEntity) 
@@ -23,19 +127,117 @@ void Plugin_Player_State(entt::registry& Reg,entt::entity ObjEntity,
   }
 
 }
+
+/**
+ * @brief Create Text Object
+ *
+ * @param TextObj[OUT]
+ * @param pTex[IN]
+ * @param Pos[IN]
+ */
+void Create_TextObj(Obj_t& TextObj,SDL_Texture* pTex,Pos_t& Pos) {
+  SDL_Rect Src={};
+  SDL_Rect Dst={};
+  SDL_QueryTexture(pTex, NULL, NULL, &Src.w, &Src.h);
+  if (Pos.CurLocation.iW == 0 && Pos.CurLocation.iH == 0) {
+    Pos.CurLocation.iW = Src.w; 
+    Pos.CurLocation.iH = Src.h; 
+  }
+
+  Dst.x = Pos.CurLocation.iX;
+  Dst.y = Pos.CurLocation.iY;
+  Dst.w = Pos.CurLocation.iW;
+  Dst.h = Pos.CurLocation.iH;
+
+  TextObj = {
+    {pTex,Src,Dst,0}, // Sprite_t
+    Pos,                       // Pos_t
+  };
+}
+
+
 void Plugin_SceneCtrl(entt::registry& Reg,entt::entity SceneEntity,
                          double &dbActualFrameDiff_SEC,
                          entt::entity &ObjLifecycleEntity) 
 {
 
-//  std::vector<Obj_t> Create_List ={};
-//  std::vector<entt::entity> Delete_List={};
-//  auto &LifeCycle = Reg.get<ObjLifecyle_t>(ObjLifecycleEntity);
-//  auto &PlayerState  = Reg.get<State_t>(ObjEntity);
-//
-//
-//  // Objs clear
+  auto &LifeCycle = Reg.get<ObjLifecyle_t>(ObjLifecycleEntity);
 
+  auto &SceneCtrl = Reg.get<SceneCtrl_t>(SceneEntity);
+
+  std::vector<Obj_t> Create_List ={};
+  std::vector<entt::entity> Delete_List={};
+  Scene_idx_t RequestedScene = SCENE_NONE;
+  // Get Requested scene from the vector
+  if (SceneCtrl.vecScene.size() != 0) {
+    RequestedScene = *SceneCtrl.vecScene.begin();
+    SceneCtrl.vecScene.erase(SceneCtrl.vecScene.begin());
+  }
+
+  if (RequestedScene == SCENE_TITLE) {
+
+    //Delete Objs
+    auto ViewDelete = Reg.view<Sprite_t,Pos_t,Attr_t,State_t>();
+    for (auto Entity : ViewDelete) {
+      LifeCycle.Delete_List.insert(Entity);
+    }
+
+    // Get TextureMap
+    entt::entity TextureMapEntity = LifeCycle.TextureMap;
+    static auto &TextureMap = Reg.get<TextureMap_t>(TextureMapEntity);
+
+    // Create Main Title
+
+    auto pTitleTextTex = TextureMap.mapTextures["TitleText"];
+    Pos_t Pos;
+    Obj_t Title;
+    memset(&Pos,0x00,sizeof(Pos_t));
+    Pos.CurLocation.iX = 100;
+    Pos.CurLocation.iY = 100;
+    Create_TextObj(Title,pTitleTextTex,  Pos);
+    Create_List.push_back(Title);
+    
+    // Create "Press Enter Key" Title
+    Obj_t Press_Enter_Key;
+    auto pPressEnterKeyTex = TextureMap.mapTextures["Press_Enter_Key"];
+    memset(&Pos,0x00,sizeof(Pos_t));
+    Pos.CurLocation.iX = 130;
+    Pos.CurLocation.iY = 350;
+    Create_TextObj(Press_Enter_Key,pPressEnterKeyTex,  Pos);
+    Create_List.push_back(Press_Enter_Key);
+
+    // Create Credit Title
+    Obj_t Credit;
+    auto pCreditTex = TextureMap.mapTextures["credit"];
+    memset(&Pos,0x00,sizeof(Pos_t));
+    Pos.CurLocation.iX = 50;
+    Pos.CurLocation.iY = 450;
+    Create_TextObj(Credit,pCreditTex,  Pos);
+    Create_List.push_back(Credit);
+
+    // Change Current Scene
+    SceneCtrl.CurrentScene = SCENE_TITLE;
+  }
+
+  if (RequestedScene == SCENE_PLAY) {
+    // Delete titles
+    auto ViewDelete = Reg.view<Sprite_t,Pos_t,Attr_t,State_t>();
+    for (auto Entity : ViewDelete) {
+      LifeCycle.Delete_List.insert(Entity);
+    }
+    // Create Objects
+    Create_Player(Reg,ObjLifecycleEntity);
+    Create_Enemies(Reg,ObjLifecycleEntity);
+    // Change Current Scene
+    SceneCtrl.CurrentScene = SCENE_PLAY;
+  }
+
+  for (auto Item : Create_List) {
+    LifeCycle.Create_List.push_back(Item);
+  }
+  for (auto Item : Delete_List) {
+    LifeCycle.Delete_List.insert(Item);
+  }
 }
 void Plugin_Enemy_State(entt::registry& Reg,entt::entity ObjEntity,
                          double &dbActualFrameDiff_SEC,
@@ -242,7 +444,6 @@ void Plugin_Bullet_Moving(entt::registry& Reg,entt::entity ObjEntity,
           BulletPos.CurLocation.iX,BulletPos.CurLocation.iY);
 
       if (dbDist < iCollisionRange ) {
-        printf("\033[1;33m[%s][%d] :x: Collision \033[m\n",__FUNCTION__,__LINE__);
         // Spawn Burst
         State_t BurstState;
         BurstState.fCoolTimeLeft_Sec = .3f; 
@@ -256,10 +457,6 @@ void Plugin_Bullet_Moving(entt::registry& Reg,entt::entity ObjEntity,
         // reduce the life gauge of the target
         auto &TargetState = ViewObjs.get<State_t>(Entity);
         TargetState.iLife -= BULLET_DAMAGE;
-        printf("\033[1;33m[%s][%d] :x: TargetState.iLife %d \033[m\n",
-            __FUNCTION__,__LINE__,TargetState.iLife);
-
-
 
         Spawn_Burst(pBurstTex, BurstPos, BurstState, BurstObj);
 

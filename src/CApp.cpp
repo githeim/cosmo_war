@@ -41,117 +41,26 @@ void CApp::Create_Textures(const std::shared_ptr<entt::registry>& pECS,
     IMG_LoadTexture(m_pRenderer, "resource/pics/burst_00.png");
   m_mapTextures["burst00"] =Map.mapTextures["burst00"];
 
+
   SDL_Texture* pTxtTexture;
   DrawText(pTxtTexture,m_mapFonts["Text_LARGE"],"COSMO WAR",m_pRenderer);
+  Map.mapTextures["TitleText"] = pTxtTexture;
   m_mapTextures["TitleText"] = pTxtTexture;
-  int x,y;
-  SDL_QueryTexture(pTxtTexture, NULL, NULL, &x, &y);
+
+  DrawText(pTxtTexture,m_mapFonts["Text_MIDDLE"],"Press Enter Key",m_pRenderer);
+  Map.mapTextures["Press_Enter_Key"] = pTxtTexture;
+  m_mapTextures["Press_Enter_Key"] = pTxtTexture;
+
+  DrawText(pTxtTexture,m_mapFonts["Text_SMALL"],"windheim 2024.07.02",m_pRenderer);
+  Map.mapTextures["credit"] = pTxtTexture;
+  m_mapTextures["credit"] = pTxtTexture;
+
   pECS->emplace<TextureMap_t>(TextureMap, Map);
 
 }
 void CApp::Destroy_Textures(std::unordered_map<std::string,SDL_Texture *>& mapTextures) {
   for (const auto &pTexture : mapTextures) {
     SDL_DestroyTexture(pTexture.second);
-  }
-}
-
-/**
- * @brief Creates objects that make up the program.
- *
- * @param pECS[OUT]
- * @param ObjLifecycleEntity[OUT]
- */
-void CApp::Create_Entities(const std::shared_ptr<entt::registry>& pECS,entt::entity& ObjLifecycleEntity) {
-  Create_Player(pECS,ObjLifecycleEntity);
-  Create_Enemies(pECS,ObjLifecycleEntity);
-}
-
-void CApp::Create_Player(const std::shared_ptr<entt::registry>& pECS,
-                         entt::entity& ObjLifeCycleControl) {
-  // Base Position
-  Pos_t Pos; 
-  Pos.CurLocation = { SCREEN_WIDTH/2,SCREEN_HEIGHT*4/5,SPRITE_SIZE,SPRITE_SIZE,0 };
-  // Base Attribute
-  Attr_t Attr;
-  Attr.iFaction = PLAYER_1;
-  Attr.iLife = PLAYER_LIFE;
-  Attr.fCoolTime_Sec = .1f;  // Firing cool time
-  Attr.iMovingSpeed_Pixel = 3;  // Moving Speed
-  Attr.vecPlugins.push_back(Plugin_Player_State);
-  // Base Sprite
-  Sprite_t Sprite;
-  Sprite.pTex = m_mapTextures["spaceship"];
-  Sprite.src ={0,0,SPRITE_SIZE,SPRITE_SIZE};
-  Sprite.dst = {0,0,SPRITE_SIZE,SPRITE_SIZE}; 
-
-  // Base State
-  State_t State;
-  State.fCoolTimeLeft_Sec=Attr.fCoolTime_Sec;
-  State.bCoolTimeReady=true;
-  State.TargetLocation ={};
-  State.Direction ={};
-  State.iLife = Attr.iLife;
-
-  // Create obj to insert create list
-  Obj_t Obj = {Sprite,Pos,Attr,State};
-
-  auto &LifeCycle = pECS->get<ObjLifecyle_t>(ObjLifeCycleControl);
-  LifeCycle.Create_List.push_back(Obj);
-}
-
-void CApp::Create_Titles(const std::shared_ptr<entt::registry>& pECS,
-                          entt::entity& ObjLifeCycleControl) {
-  // Create Openning title
-
-}
- 
-void CApp::Create_Enemies(const std::shared_ptr<entt::registry>& pECS,
-                          entt::entity& ObjLifeCycleControl) {
-  
-  // Base Position
-  Pos_t Pos ;
-  Pos.CurLocation = { 30,60,SPRITE_SIZE,SPRITE_SIZE,0 };
-  // Base Attribute
-  Attr_t Attr;
-  Attr.iFaction = ENEMY_1;
-  Attr.iLife = ENEMY_LIFE;
-  Attr.fCoolTime_Sec = .1f;  // Firing cool time
-  Attr.iMovingSpeed_Pixel = 2;  // Moving Speed
-
-  // Moving processing plugin
-  Attr.vecPlugins.push_back(Plugin_Enemy_Moving);
-  // Shooting processing plugin
-  Attr.vecPlugins.push_back(Plugin_Enemy_Shooting);
-  Attr.vecPlugins.push_back(Plugin_Enemy_State);
-
-
-  int iIntervalX = SPRITE_SIZE*2;
-
-
-  // Base Sprite
-  Sprite_t Sprite;
-  Sprite.pTex = m_mapTextures["enemy00"];
-  Sprite.src ={0,0,SPRITE_SIZE,SPRITE_SIZE};
-  Sprite.dst = {0,0,SPRITE_SIZE,SPRITE_SIZE}; 
-
-  // Base State
-  State_t State;
-  State.fCoolTimeLeft_Sec=Attr.fCoolTime_Sec;
-  State.bCoolTimeReady=true;
-  State.TargetLocation ={0,0,SPRITE_SIZE,SPRITE_SIZE,0};// TargetLocation initial value;
-  State.Direction = DIRECTION_RIGHT;
-  State.iLife = Attr.iLife;
-
-  auto &LifeCycle = pECS->get<ObjLifecyle_t>(ObjLifeCycleControl);
-
-
-  // Create 6 enemies
-  for (int i =0 ; i < 6 ; i++) {
-    Pos.CurLocation.iX = 30 + (iIntervalX*i);
-    State.Direction =DIRECTION_RIGHT;
-    State.TargetLocation.iX=Pos.CurLocation.iX + ENEMY_MOVEMENT_WIDTH;
-    Obj_t Obj = {Sprite,Pos,Attr,State};
-    LifeCycle.Create_List.push_back(Obj);
   }
 }
 
@@ -213,7 +122,8 @@ int CApp::Create_SceneCtrl (const std::shared_ptr<entt::registry>& pECS,
 {
   // Create Scene Controller
   SceneCtrl_t SceneCtrl;
-  SceneCtrl.CurrentScene = SCENE_TITLE;
+  SceneCtrl.CurrentScene = SCENE_NONE;
+  SceneCtrl.vecScene.push_back(SCENE_TITLE);
   SceneCtrl.vecPlugins.push_back( Plugin_SceneCtrl);
   SceneCtrlEntity = pECS->create();
   pECS->emplace<SceneCtrl_t>(SceneCtrlEntity, SceneCtrl);
@@ -273,8 +183,9 @@ void CApp::MainLoop() {
   Create_Fonts(m_mapFonts);
   Create_Textures(m_pECS_registry,m_TextureMapEntity);
   Create_SceneCtrl(m_pECS_registry,m_SceneCtrlEntity);
+  Set_SceneCtrl_Entity(m_SceneCtrlEntity);
+
   Create_ObjLifecycleEntity(m_pECS_registry,m_ObjLifecycleEntity,m_TextureMapEntity);
-  Create_Entities(m_pECS_registry,m_ObjLifecycleEntity);
 
   SDL_SetRenderDrawColor(m_pRenderer, 55, 55, 55, SDL_ALPHA_OPAQUE);
   SDL_RenderClear(m_pRenderer);
@@ -326,9 +237,6 @@ void CApp::MainLoop() {
     m_Sys_Logic.Update(*m_pECS_registry,dbActual_Frame_diff_SEC,
                         m_ObjLifecycleEntity);
 
-    SDL_Rect Src={0,0,432,96};
-    SDL_Rect Dst={100,200,432,96};
-    SDL_RenderCopyEx(m_pRenderer,m_mapTextures["TitleText"],&Src,&Dst,0,NULL,SDL_FLIP_NONE);
 
     SDL_RenderPresent(m_pRenderer);
 

@@ -23,17 +23,11 @@ public:
   int Create_SceneCtrl (const std::shared_ptr<entt::registry>& pECS,
                         entt::entity& SceneCtrlEntity);
 
-  void Create_Titles(const std::shared_ptr<entt::registry>& pECS,
-      entt::entity& ObjLifeCycleControl);
   int Create_Fonts(std::unordered_map<std::string, TTF_Font*>& mapFonts);
   void Destroy_Fonts(std::unordered_map<std::string, TTF_Font*>& mapFonts);
   void Create_Textures(const std::shared_ptr<entt::registry>& pECS,
                   entt::entity& TextureMap);
   void Destroy_Textures(std::unordered_map<std::string,SDL_Texture *>& mapTextures);
-  void Create_Entities(const std::shared_ptr<entt::registry>& pECS,entt::entity& ObjLifecycleEntity);
-    // Entities 
-    void Create_Enemies(const std::shared_ptr<entt::registry>& pECS,entt::entity& ObjLifeCycleControl);
-    void Create_Player(const std::shared_ptr<entt::registry>& pECS,entt::entity& ObjLifeCycleControl);
 
   void Create_Inputs(const std::shared_ptr<entt::registry>& pECS);
 

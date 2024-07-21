@@ -10,6 +10,10 @@ inline double GetDist(double x1, double y1, double x2, double y2) {
     return std::sqrt(std::pow((x2 - x1), 2) + std::pow((y2 - y1), 2));
 }
 
+
+void         Set_SceneCtrl_Entity(entt::entity Entity); 
+entt::entity Get_SceneCtrl_Entity();
+
 void Plugin_Player_State(entt::registry& Reg,entt::entity ObjEntity,
                          double &dbActualFrameDiff_SEC,
                          entt::entity &ObjLifecycleEntity);

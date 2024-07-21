@@ -12,19 +12,21 @@
 
 
 typedef enum {
-  SCENE_TITLE =0,
-  SCENE_PLAY = 1,
-  SCENE_WIN_ENDING =2,
-  SCENE_DEFEAT_ENDING =3,
+  SCENE_NONE           = 0x0,
+  SCENE_TITLE          = 0x1,
+  SCENE_PLAY           = 0x2,
+  SCENE_WIN_ENDING     = 0x4,
+  SCENE_DEFEAT_ENDING  = 0x8
 } Scene_idx_t;
 
 typedef struct SceneCtrl {
+  // Requested Scene
+  std::vector<Scene_idx_t> vecScene;
   Scene_idx_t CurrentScene;
 
   std::vector<std::function<void(entt::registry& Reg, entt::entity ObjEntity,
                             double &dbActualFrameDiff_SEC,
                             entt::entity &ObjLifecycleEntity)>>  vecPlugins;
-
 } SceneCtrl_t;
 
 
