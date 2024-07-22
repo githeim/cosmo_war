@@ -55,9 +55,11 @@ void Spawn_Burst( SDL_Texture * pTex,
 #define COLLISION_RANGE (24) // Pixels
 #define SEACHING_RANGE  (24) // Pixels
 
-#define ENEMY_LIFE (10)
-#define PLAYER_LIFE (10)
+#define ENEMY_LIFE (1)
+#define PLAYER_LIFE (1)
 #define BULLET_LIFE (1)
 
 #define BULLET_DAMAGE (1)
+
+#define ENTER_KEY_INPUT_DELAY (0.3)
 #endif /* ifndef _APP_PLUGINS_H_ */

@@ -11,7 +11,7 @@
 #include <unistd.h>
 
 #define SCREEN_POS_X (0)
-#define SCREEN_POS_Y (1080)
+#define SCREEN_POS_Y (0)
 
 #define SCREEN_WIDTH  (640)
 #define SCREEN_HEIGHT (480)

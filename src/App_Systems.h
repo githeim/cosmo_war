@@ -132,13 +132,29 @@ typedef struct Sys_Input {
     entt::entity SceneCtrl_Entity = Get_SceneCtrl_Entity();
     auto &SceneCtrl = Reg.get<SceneCtrl_t>(SceneCtrl_Entity);
     
-    if (SceneCtrl.CurrentScene == SCENE_TITLE) {
-      if (Keys[SDL_SCANCODE_RETURN]) {
-        SceneCtrl.vecScene.push_back(SCENE_PLAY);
-        printf("\033[1;31m[%s][%d] :x: change to %d \033[m\n",
-            __FUNCTION__,__LINE__,SCENE_PLAY);
+    static double dbInputDelay_SEC = ENTER_KEY_INPUT_DELAY;
 
+    if(dbInputDelay_SEC < 0 ){
+      if (SceneCtrl.CurrentScene == SCENE_TITLE) {
+        if (Keys[SDL_SCANCODE_RETURN]) {
+          dbInputDelay_SEC = ENTER_KEY_INPUT_DELAY;
+          SceneCtrl.vecScene.push_back(SCENE_PLAY);
+          printf("\033[1;31m[%s][%d] :x: change to %d \033[m\n",
+              __FUNCTION__,__LINE__,SCENE_PLAY);
+        }
       }
+      else if (SceneCtrl.CurrentScene == SCENE_WIN_ENDING ||
+          SceneCtrl.CurrentScene == SCENE_DEFEATED_ENDING  ) {
+        if (Keys[SDL_SCANCODE_RETURN]) {
+          dbInputDelay_SEC = ENTER_KEY_INPUT_DELAY;
+          SceneCtrl.vecScene.push_back(SCENE_TITLE);
+          printf("\033[1;31m[%s][%d] :x: change to %d \033[m\n",
+              __FUNCTION__,__LINE__,SCENE_TITLE);
+        }
+      }
+    }
+    else{
+      dbInputDelay_SEC-=dbActual_Frame_diff_SEC;
     }
    
     

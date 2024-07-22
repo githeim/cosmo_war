@@ -227,7 +227,6 @@ void Plugin_SceneCtrl(entt::registry& Reg,entt::entity SceneEntity,
     SceneCtrl.CurrentScene = SCENE_PLAY;
   }
   else if (RequestedScene == SCENE_WIN_ENDING) {
-    printf("\033[1;33m[%s][%d] :x: SCENE_WIN_ENDING \033[m\n",__FUNCTION__,__LINE__);
     // Delete titles, Objects
     auto ViewDelete = Reg.view<Sprite_t,Pos_t,Attr_t,State_t>();
     for (auto Entity : ViewDelete) {
@@ -238,14 +237,24 @@ void Plugin_SceneCtrl(entt::registry& Reg,entt::entity SceneEntity,
     Pos_t Pos;
     Obj_t Title;
     memset(&Pos,0x00,sizeof(Pos_t));
-    Pos.CurLocation.iX = 320-(336/2);
-    Pos.CurLocation.iY = 240;
+    int w,h;
+    SDL_QueryTexture(pWinTex, NULL, NULL, &w, &h);
+    Pos.CurLocation.iX = (SCREEN_WIDTH/2)  - (w/2);
+    Pos.CurLocation.iY = (SCREEN_HEIGHT/2) - (h/2);
     Create_TextObj(Title,pWinTex,  Pos);
     Create_List.push_back(Title);
+
+    // Create "Press Enter Key" Title
+    Obj_t Press_Enter_Key;
+    auto pPressEnterKeyTex = TextureMap.mapTextures["Press_Enter_Key"];
+    memset(&Pos,0x00,sizeof(Pos_t));
+    Pos.CurLocation.iX = 130;
+    Pos.CurLocation.iY = 350;
+    Create_TextObj(Press_Enter_Key,pPressEnterKeyTex,  Pos);
+    Create_List.push_back(Press_Enter_Key);
     SceneCtrl.CurrentScene = SCENE_WIN_ENDING;
   }
   else if (RequestedScene == SCENE_DEFEATED_ENDING) {
-    printf("\033[1;33m[%s][%d] :x: SCENE_DEFEATED_ENDING \033[m\n",__FUNCTION__,__LINE__);
     // Delete titles, Objects
     auto ViewDelete = Reg.view<Sprite_t,Pos_t,Attr_t,State_t>();
     for (auto Entity : ViewDelete) {
@@ -256,11 +265,21 @@ void Plugin_SceneCtrl(entt::registry& Reg,entt::entity SceneEntity,
     Pos_t Pos;
     Obj_t Title;
     memset(&Pos,0x00,sizeof(Pos_t));
-    Pos.CurLocation.iX = 320-(384/2);
-    Pos.CurLocation.iY = 240;
+    int w,h;
+    SDL_QueryTexture(pDefeatedTex, NULL, NULL, &w, &h);
+    Pos.CurLocation.iX = (SCREEN_WIDTH/2)  - (w/2);
+    Pos.CurLocation.iY = (SCREEN_HEIGHT/2) - (h/2);
     Create_TextObj(Title,pDefeatedTex,  Pos);
 
     Create_List.push_back(Title);
+    // Create "Press Enter Key" Title
+    Obj_t Press_Enter_Key;
+    auto pPressEnterKeyTex = TextureMap.mapTextures["Press_Enter_Key"];
+    memset(&Pos,0x00,sizeof(Pos_t));
+    Pos.CurLocation.iX = 130;
+    Pos.CurLocation.iY = 350;
+    Create_TextObj(Press_Enter_Key,pPressEnterKeyTex,  Pos);
+    Create_List.push_back(Press_Enter_Key);
     SceneCtrl.CurrentScene = SCENE_DEFEATED_ENDING;
   }
 
